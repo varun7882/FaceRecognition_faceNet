@@ -3,11 +3,8 @@ import os
 
 import cv2
 from numpy import save, load
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-from util.imageutils import getFaces
+from util.faceutils import get_faces
+from util.faceutils import get_face_signatures
 
 
 def print_hi(name):
@@ -15,21 +12,29 @@ def print_hi(name):
     print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
 
 
+def save_faces():
+    path = r'C:\Users\varun\Desktop\VS\ph'
+    faces = get_faces(path)
+    print("total faces are")
+    print(len(faces))
+    print(type(faces))
+    dataDir = "data"
+    save(os.path.join(dataDir,"faces_data"),faces)
+    print("File is saved successfully")
+
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
-    path = r'C:\Users\varun\Desktop\VS\ph'
-    list = getFaces(path)
-    print("total faces are")
-    print(len(list))
-    print(type(list))
-    save('faces.npy', list)
-    print("File is saved successfully")
-    newlist = load('faces.npy')
-    for f in newlist:
+    print_hi('Varun, welcome to facenet program')
+    #save_faces()
+    faces_from_file = load(r'data\faces_data.npy')
+    for f in faces_from_file:
         cv2.imshow('Resized Face', f)
-        cv2.waitKey(0)
-    if (list == newlist):
-        print("Both are equal")
-    else:
-        print("ye sb kya h")
+    print("faces count")
+    print(len(faces_from_file))
+    face_signatures = get_face_signatures(faces_from_file)
+    print(type(face_signatures))
+    print(len(face_signatures))
+    print(type(face_signatures[0]))
+    print(repr(face_signatures[0]))
+    print(face_signatures[0].shape)
