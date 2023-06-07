@@ -3,8 +3,9 @@ import os
 import pickle
 
 import cv2
+import numpy
 from numpy import save, load
-from util.faceutils import get_faces, getImageFacesMapping
+from util.faceutils import get_faces, getImageFacesMapping, getFacenet
 from util.faceutils import get_face_signatures
 from util.imageutils import getImages
 
@@ -46,6 +47,10 @@ def save_image_faces_mappings():
     print(len(facesMap))
     print(type(facesMap))
     os.mkdir(dataDir2)
+    for key in facesMap:
+        print(type(facesMap[key]))
+        print(type(facesMap[key][0]))
+        break
     with open(os.path.join(dataDir2,savedDataFile), 'wb') as file:
         pickle.dump(facesMap, file)
     print("File is saved successfully")
@@ -63,13 +68,23 @@ def load_image_faces_map():
         print(len(faces_from_file[key]))
     return faces_from_file
 
+def save_face_embeddings(image_face_map):
+    image_signature_map = {}
+    model = getFacenet()
+    for img in image_face_map:
+        print(img)
+        print(type(image_face_map[img]))
+        face_embeddings = get_face_signatures(model,numpy.asarray(image_face_map[img]))
+        image_signature_map[img] = face_embeddings
+    with open(os.path.join(dataDir,"faceSignatures.pkl"), 'wb') as file:
+        pickle.dump(image_signature_map, file)
+    print("File is saved successfully")
+
+
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     print_hi('Varun, welcome to facenet program')
-    #save_faces()
-    #load_faces()
-    #save_image_faces_mappings()
-    load_image_faces_map()
-    #getImages(r'F:\Varun\PICS')
+    getImages(r'F:\Varun\Sakshi X Varun')
 
 

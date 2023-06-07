@@ -7,6 +7,8 @@ from numpy import expand_dims
 from util.imageutils import is_image
 
 facenet_model = '20170511-185253'
+
+
 def get_faces(path):
     print("images to be extracted from " + path)
     faces = []
@@ -51,11 +53,11 @@ def get_faces_from_image(image):
 
     return faces
 
-
-def get_face_signatures(faces):
+def getFacenet():
     model = FaceNet(key=facenet_model)
-    #model = load_model('facenet_keras.h5')
-    print('Loaded Model Facenet')
+    return model
+
+def get_face_signatures(model,faces):
     #return get_face_signature_util(model, faces)
     return model.embeddings(faces)
 

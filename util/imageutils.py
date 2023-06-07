@@ -3,7 +3,7 @@ import shutil
 
 from PIL import Image
 
-
+imageDataDir = r'C:\Users\varun\Desktop\VS'
 def is_image(file):
     try:
         img = Image.open(file)
@@ -14,8 +14,8 @@ def is_image(file):
 
 def getImages(source):
     print("images to be extracted from " + source)
-    destinationFolder = "dataset"
-    os.mkdir(destinationFolder)
+    destinationFolder = "all_images"
+    os.mkdir(os.path.join(imageDataDir,destinationFolder))
     imageCount = 0
     nonImageCount = 0
     nonImages = []
@@ -24,12 +24,11 @@ def getImages(source):
             img_file = os.path.join(rootDir, file)
             if is_image(img_file):
                 imageCount = imageCount + 1
-                shutil.copy(img_file,destinationFolder)
+                print("saving image "+str(imageCount)+" with name "+img_file)
+                shutil.copy2(img_file,os.path.join(imageDataDir,destinationFolder))
             else:
                 nonImageCount = nonImageCount + 1
                 nonImages.append(img_file)
-        if nonImageCount > 10:
-            break
     print("Images found "+str(imageCount))
     print("nonImages found "+str(nonImageCount))
     print(nonImages)
