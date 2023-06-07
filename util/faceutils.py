@@ -73,3 +73,16 @@ def get_face_signature_util(model, faces):
         prediction = model.embeddings(sample)
         face_signatures.append(prediction)
     return face_signatures
+
+def getImageFacesMapping(path):
+    print("image-Faces to be extracted from " + path)
+    imageFacesMap = {}
+    for rootDir, dirs, files in os.walk(path):
+        for file in files:
+            img_file = os.path.join(rootDir, file)
+            if is_image(img_file):
+                faces_from_image = get_faces_from_image(img_file)
+                imageFacesMap[img_file] = faces_from_image
+                if len(imageFacesMap) > 10:
+                    return imageFacesMap
+
