@@ -1,90 +1,88 @@
 # This is a sample Python script.
 import os
 import pickle
+import shutil
+from datetime import datetime
 
-import cv2
-import numpy
-from numpy import save, load
-from util.faceutils import get_faces, getImageFacesMapping, getFacenet
-from util.faceutils import get_face_signatures
+from util.faceutils import getImageFacesEmbeddingsMapping, faceEmdbeddingsAsList, is_eligible
 from util.imageutils import getImages
 
-
 dataDir = r'data'
-dataDir2 = r'C:\Users\varun\Desktop\VS\test_dataset'
-savedDataFile = 'img_faces_data.pkl'
+dataDir2 = r'C:\Users\varun\Desktop\VS\savedFaceData'
+savedDataFile = 'img_faces_embeddings_data.pkl'
+savedWeddingDataFile = 'img_faces_embeddings_wedding_data.pkl'
+savedWeddingDataFile2 = 'img_faces_embeddings_wedding_data2.pkl'
+savedWeddingDataFile3 = 'img_faces_embeddings_wedding_data3.pkl'
+savedWeddingDataFile4 = 'img_faces_embeddings_wedding_data4.pkl'
+savedWeddingDataFile5 = 'img_faces_embeddings_wedding_data5.pkl'
+sourceTestDir = r'C:\Users\varun\Desktop\VS\photosToMatch'
+targetResultDir = r'C:\Users\varun\Desktop\VS\relevant_images'
+allImagespath1 = r'C:\Users\varun\Desktop\VS\all_images'
+allImagespath2 = r'C:\Users\varun\Desktop\VS\all_images2'
+allImagespath3 = r'C:\Users\varun\Desktop\VS\all_images3'
+allImagespath4 = r'C:\Users\varun\Desktop\VS\all_images4'
+allImagespath5 = r'C:\Users\varun\Desktop\VS\all_images5'
 
 def print_hi(name):
     # Use a breakpoint in the code line below to debug your script.
     print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
 
-
-def save_faces():
-    path = r'C:\Users\varun\Desktop\VS\ph'
-    faces = get_faces(path)
-    print("total faces are")
-    print(len(faces))
-    print(type(faces))
-    dataDir = "data"
-    save(os.path.join(dataDir,"faces_data"),faces)
+def save_image_faces_embeddings_mappings(imagesPath,saveInFile):
+    start_time = datetime.now()
+    face_embeddings = getImageFacesEmbeddingsMapping(imagesPath)
+    print("total about to be saved files are")
+    print(len(face_embeddings))
+    print(type(face_embeddings))
+    if not os.path.exists(dataDir2):
+        os.mkdir(dataDir2)
+    with open(os.path.join(dataDir2,saveInFile), 'wb') as file:
+        pickle.dump(face_embeddings, file)
     print("File is saved successfully")
+    print("time taken in saving: " + str(datetime.now() - start_time))
 
+def load_image_faces_embeddings_mappings(loadFromFile):
+    with open(os.path.join(dataDir2, loadFromFile), 'rb') as file:
+        face_embeddings = pickle.load(file)
+    print("total loaded faces are")
+    print(len(face_embeddings))
+    print(type(face_embeddings))
+    return face_embeddings
 
-def load_faces():
-    faces_from_file = load(r'data\faces_data.npy')
-    for f in faces_from_file:
-        cv2.imshow('Resized Face', f)
-    print("faces count")
-    print(len(faces_from_file))
-    return faces_from_file
+def extract_relevant_images(sourceTestDir,targetResultDir):
+    start_time = datetime.now()
+    test_face_embeddings = faceEmdbeddingsAsList(sourceTestDir)
+    face_embeddings = load_image_faces_embeddings_mappings(savedWeddingDataFile)
+    face_embeddings.update(load_image_faces_embeddings_mappings(savedWeddingDataFile2))
+    face_embeddings.update(load_image_faces_embeddings_mappings(savedWeddingDataFile3))
+    face_embeddings.update(load_image_faces_embeddings_mappings(savedWeddingDataFile4))
+    face_embeddings.update(load_image_faces_embeddings_mappings(savedWeddingDataFile5))
+    imagesExtracted = save_relevant_images(test_face_embeddings,face_embeddings,targetResultDir)
+    print("Relevant images extracted successfully: " + str(imagesExtracted))
+    print("time taken in extraction " + str(datetime.now() - start_time))
 
-
-
-def save_image_faces_mappings():
-    imagesPath = r'C:\Users\varun\Desktop\VS\ph'
-    facesMap = getImageFacesMapping(imagesPath)
-    print("total faces are")
-    print(len(facesMap))
-    print(type(facesMap))
-    os.mkdir(dataDir2)
-    for key in facesMap:
-        print(type(facesMap[key]))
-        print(type(facesMap[key][0]))
-        break
-    with open(os.path.join(dataDir2,savedDataFile), 'wb') as file:
-        pickle.dump(facesMap, file)
-    print("File is saved successfully")
-
-
-def load_image_faces_map():
-    with open(os.path.join(dataDir2,savedDataFile), 'rb') as file:
-        faces_from_file = pickle.load(file)
-    print("faces count")
-    print(len(faces_from_file))
-    print(type(faces_from_file))
-    print(faces_from_file)
-    for key in faces_from_file:
-        print(key)
-        print(len(faces_from_file[key]))
-    return faces_from_file
-
-def save_face_embeddings(image_face_map):
-    image_signature_map = {}
-    model = getFacenet()
-    for img in image_face_map:
-        print(img)
-        print(type(image_face_map[img]))
-        face_embeddings = get_face_signatures(model,numpy.asarray(image_face_map[img]))
-        image_signature_map[img] = face_embeddings
-    with open(os.path.join(dataDir,"faceSignatures.pkl"), 'wb') as file:
-        pickle.dump(image_signature_map, file)
-    print("File is saved successfully")
-
-
+def save_relevant_images(test_faces,face_embeddings,targetResultDir):
+    if os.path.exists(targetResultDir):
+        shutil.rmtree(targetResultDir)
+    os.makedirs(targetResultDir)
+    totalImages = 0
+    i = 0
+    for img_name in list(face_embeddings.keys()):
+        i = i + 1
+        print("Checking in image no:"+str(i)+" with name: "+img_name)
+        for test_face in test_faces:
+            if is_eligible(test_face,face_embeddings[img_name]):
+                totalImages = totalImages + 1
+                shutil.copy2(img_name,targetResultDir)
+                break
+    return totalImages
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     print_hi('Varun, welcome to facenet program')
-    getImages(r'F:\Varun\Sakshi X Varun')
+    #save_image_faces_embeddings_mappings(allImagespath5,savedWeddingDataFile5)
+    extract_relevant_images(sourceTestDir,targetResultDir)
+
+# to be called to extract images
+#getImages(r'F:\Varun\Sakshi X Varun')
 
 

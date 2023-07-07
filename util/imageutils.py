@@ -14,7 +14,7 @@ def is_image(file):
 
 def getImages(source):
     print("images to be extracted from " + source)
-    destinationFolder = "all_images"
+    destinationFolder = "all_images2"
     os.mkdir(os.path.join(imageDataDir,destinationFolder))
     imageCount = 0
     nonImageCount = 0
